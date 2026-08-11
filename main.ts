@@ -200,14 +200,24 @@ export default class MediaEmbedPlugin extends Plugin {
 	}
 }
 
-// ponytail: getSettingDefinitions() not in obsidian types yet; adopt when types ship, then bump minAppVersion to 1.13.0
-// eslint-disable-next-line obsidianmd/settings-tab/prefer-setting-definitions
 class MediaEmbedSettingTab extends PluginSettingTab {
 	plugin: MediaEmbedPlugin;
 
 	constructor(app: App, plugin: MediaEmbedPlugin) {
 		super(app, plugin);
 		this.plugin = plugin;
+	}
+
+	getSettingDefinitions() {
+		return [
+			{
+				key: 'embedHeight',
+				name: 'Embed height',
+				description: 'Height of the spotify embed in pixels (e.g., 352 for normal player, 152 for compact player). YouTube uses a 16:9 aspect ratio instead.',
+				type: 'text' as const,
+				default: '352',
+			},
+		];
 	}
 
 	display(): void {
