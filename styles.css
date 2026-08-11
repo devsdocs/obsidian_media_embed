@@ -1,8 +1,12 @@
-/*
+.media-embed-spotify {
+	width: 100%;
+	border-radius: 12px;
+	border: none;
+}
 
-This CSS file will be included with your plugin, and
-available in the app when your plugin is enabled.
-
-If your plugin does not need CSS, delete this file.
-
-*/
+.media-embed-youtube {
+	width: 100%;
+	aspect-ratio: 16 / 9;
+	border-radius: 12px;
+	border: none;
+}

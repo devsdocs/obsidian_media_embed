@@ -104,23 +104,23 @@ function detectMedia(text: string): MediaInfo | null {
 	return null;
 }
 
-function createSpotifyIframe(url: string, height: string): HTMLIFrameElement | null {
+function createSpotifyIframe(container: HTMLElement, url: string, height: string): HTMLIFrameElement | null {
 	const info = extractSpotifyInfo(url);
 	if (!info) return null;
 
-	const iframe = document.createElement('iframe');
-	iframe.src = `https://open.spotify.com/embed/${info.type}/${info.id}`;
-	iframe.width = '100%';
-	iframe.height = height;
-	iframe.style.borderRadius = '12px';
-	iframe.style.border = 'none';
-	iframe.setAttribute('allowfullscreen', '');
-	iframe.setAttribute('allow', 'autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture');
-	iframe.setAttribute('loading', 'lazy');
-	return iframe;
+	return container.createEl('iframe', {
+		cls: 'media-embed-spotify',
+		attr: {
+			src: `https://open.spotify.com/embed/${info.type}/${info.id}`,
+			height,
+			allowfullscreen: '',
+			allow: 'autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture',
+			loading: 'lazy',
+		},
+	});
 }
 
-function createYoutubeIframe(url: string): HTMLIFrameElement | null {
+function createYoutubeIframe(container: HTMLElement, url: string): HTMLIFrameElement | null {
 	const videoId = extractYoutubeId(url);
 	if (!videoId) return null;
 
@@ -130,16 +130,15 @@ function createYoutubeIframe(url: string): HTMLIFrameElement | null {
 		src += `?start=${startTime}`;
 	}
 
-	const iframe = document.createElement('iframe');
-	iframe.src = src;
-	iframe.width = '100%';
-	iframe.style.aspectRatio = '16 / 9';
-	iframe.style.borderRadius = '12px';
-	iframe.style.border = 'none';
-	iframe.setAttribute('allowfullscreen', '');
-	iframe.setAttribute('allow', 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture');
-	iframe.setAttribute('loading', 'lazy');
-	return iframe;
+	return container.createEl('iframe', {
+		cls: 'media-embed-youtube',
+		attr: {
+			src,
+			allowfullscreen: '',
+			allow: 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture',
+			loading: 'lazy',
+		},
+	});
 }
 
 export default class MediaEmbedPlugin extends Plugin {
@@ -179,22 +178,15 @@ export default class MediaEmbedPlugin extends Plugin {
 				return;
 			}
 
-			let iframe: HTMLIFrameElement | null = null;
 			const height = this.settings.embedHeight || '352';
 
 			switch (media.platform) {
 				case 'spotify':
-					iframe = createSpotifyIframe(url, height);
+					createSpotifyIframe(el, url, height);
 					break;
 				case 'youtube':
-					iframe = createYoutubeIframe(url);
+					createYoutubeIframe(el, url);
 					break;
-			}
-
-			if (iframe) {
-				el.appendChild(iframe);
-			} else {
-				el.createEl('p', { text: `Failed to embed: ${url}` });
 			}
 		});
 	}
@@ -222,7 +214,7 @@ class MediaEmbedSettingTab extends PluginSettingTab {
 
 		new Setting(containerEl)
 			.setName('Embed height')
-			.setDesc('Height of the Spotify embed in pixels (e.g., 352 for normal player, 152 for compact player). YouTube uses a 16:9 aspect ratio instead.')
+			.setDesc('Height of the spotify embed in pixels (e.g., 352 for normal player, 152 for compact player). YouTube uses a 16:9 aspect ratio instead.')
 			.addText(text => text
 				.setPlaceholder('352')
 				.setValue(this.plugin.settings.embedHeight)
