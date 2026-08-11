@@ -73,7 +73,7 @@ Common Spotify height values: `352` (normal player), `152` (compact player).
 ### Manual
 
 1. Download `main.js`, `manifest.json`, and `styles.css` from the [latest release](https://github.com/devsdocs/obsidian_media_embed/releases).
-2. Create a folder named `obsidian-media-embed` inside your vault's `.obsidian/plugins/` directory.
+2. Create a folder named `media-embed` inside your vault's `.obsidian/plugins/` directory.
 3. Place the downloaded files inside the new folder.
 4. Open **Settings → Community plugins** and enable **Media Embed**.
 
