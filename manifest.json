@@ -1,7 +1,7 @@
 {
 	"id": "stream-embed",
 	"name": "Stream Embed",
-	"version": "1.0.0",
+	"version": "1.0.1",
 	"minAppVersion": "1.0.0",
 	"description": "Automatically convert pasted Spotify and YouTube links into embedded players.",
 	"author": "devsdocs",
