@@ -1,14 +1,50 @@
-import { Plugin, PluginSettingTab, Setting, App, Editor } from 'obsidian';
+import { Plugin, PluginSettingTab, Setting, App, Editor, MarkdownPostProcessorContext } from 'obsidian';
 
 interface SpotifyEmbedSettings {
-	embedStyle: 'iframe' | 'div';
 	embedHeight: string;
 }
 
 const DEFAULT_SETTINGS: SpotifyEmbedSettings = {
-	embedStyle: 'iframe',
 	embedHeight: '352',
 };
+
+const VALID_TYPES = ['track', 'album', 'playlist', 'artist', 'episode', 'show'];
+
+function extractSpotifyInfo(url: string): { type: string; id: string } | null {
+	try {
+		const parsed = new URL(url.includes('://') ? url : `https://${url}`);
+		if (parsed.hostname.toLowerCase() !== 'open.spotify.com') return null;
+
+		const pathParts = parsed.pathname.split('/').filter(p => p.length > 0);
+		if (pathParts.length < 2) return null;
+
+		// Skip known prefixes: /embed/... and /intl-en/...
+		let i = 0;
+		while (i < pathParts.length - 1) {
+			const part = pathParts[i];
+			if (part === 'embed' || part?.startsWith('intl-')) {
+				i++;
+			} else {
+				break;
+			}
+		}
+
+		const type = pathParts[i];
+		const id = pathParts[i + 1];
+		if (type && id && VALID_TYPES.includes(type)) {
+			return { type, id };
+		}
+		return null;
+	} catch {
+		return null;
+	}
+}
+
+function isSpotifyUrl(text: string): boolean {
+	const trimmed = text.trim();
+	if (trimmed === '' || /\s/.test(trimmed)) return false;
+	return extractSpotifyInfo(trimmed) !== null;
+}
 
 export default class SpotifyEmbedPlugin extends Plugin {
 	settings!: SpotifyEmbedSettings;
@@ -17,83 +53,62 @@ export default class SpotifyEmbedPlugin extends Plugin {
 		await this.loadSettings();
 		this.addSettingTab(new SpotifyEmbedSettingTab(this.app, this));
 
+		// On paste: insert a clean Spotify URL on empty lines
 		this.registerEvent(
 			this.app.workspace.on('editor-paste', (evt: ClipboardEvent, editor: Editor) => {
 				if (evt.defaultPrevented) return;
 
 				const line = editor.getCursor().line;
 				const lineText = editor.getLine(line).trim();
-				// Only embed if pasted on an empty line
 				if (lineText !== '') return;
 
 				const pastedTextRaw = evt.clipboardData?.getData('text/plain') ?? '';
-				if (!this.isSpotifyUrl(pastedTextRaw)) return;
+				if (!isSpotifyUrl(pastedTextRaw)) return;
 
-				const spotifyInfo = this.extractSpotifyInfo(pastedTextRaw.trim());
-				if (!spotifyInfo) return;
+				const info = extractSpotifyInfo(pastedTextRaw.trim());
+				if (!info) return;
 
 				evt.preventDefault();
 
-				const embedSrc = `https://open.spotify.com/embed/${spotifyInfo.type}/${spotifyInfo.id}`;
-				let embedCode = '';
-				const height = this.settings.embedHeight || '352';
-
-				switch (this.settings.embedStyle) {
-					case 'iframe':
-						embedCode = `<iframe style="border-radius:12px" src="${embedSrc}" width="100%" height="${height}" frameBorder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>`;
-						break;
-					case 'div':
-						embedCode = `<div style="position: relative; width: 100%; height: ${height}px; max-width: 100%; overflow: hidden;"><iframe style="position: absolute; top: 0; left: 0; border-radius:12px; width: 100%; height: 100%;" src="${embedSrc}" frameBorder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe></div>`;
-						break;
-				}
-
-				editor.replaceRange(embedCode, { line: line, ch: 0 }, { line: line, ch: lineText.length });
-				editor.setCursor({ line: line, ch: embedCode.length });
+				// Insert a canonical Spotify URL — the post-processor renders it
+				const canonicalUrl = `https://open.spotify.com/${info.type}/${info.id}`;
+				editor.replaceRange(canonicalUrl, { line, ch: 0 }, { line, ch: lineText.length });
+				editor.setCursor({ line, ch: canonicalUrl.length });
 			})
 		);
-	}
 
-	isSpotifyUrl(text: string): boolean {
-		const trimmed = text.trim();
-		if (trimmed === '') return false;
-		if (/\s/.test(trimmed)) return false;
+		// Post-processor: render Spotify URLs as iframes in Reading / Live Preview
+		this.registerMarkdownPostProcessor((el: HTMLElement, _ctx: MarkdownPostProcessorContext) => {
+			// Find <a> elements linking to Spotify
+			const anchors = el.querySelectorAll('a[href*="open.spotify.com"]');
+			for (const anchor of Array.from(anchors)) {
+				const href = anchor.getAttribute('href');
+				if (!href) continue;
 
-		return this.extractSpotifyInfo(trimmed) !== null;
-	}
+				const info = extractSpotifyInfo(href);
+				if (!info) continue;
 
-	extractSpotifyInfo(url: string): { type: string, id: string } | null {
-		try {
-			const parsed = new URL(url.includes('://') ? url : `https://${url}`);
-			const hostname = parsed.hostname.toLowerCase();
-			
-			if (hostname !== 'open.spotify.com') return null;
-			
-			const pathParts = parsed.pathname.split('/').filter(p => p.length > 0);
-			if (pathParts.length >= 2) {
-				let typeIndex = 0;
-				// Skip known prefixes: /embed/... and /intl-en/...
-				while (typeIndex < pathParts.length - 1) {
-					const part = pathParts[typeIndex];
-					if (part === 'embed' || part?.startsWith('intl-')) {
-						typeIndex++;
-					} else {
-						break;
-					}
-				}
-				
-				if (pathParts.length > typeIndex + 1) {
-					const type = pathParts[typeIndex];
-					const id = pathParts[typeIndex + 1];
-					const validTypes = ['track', 'album', 'playlist', 'artist', 'episode', 'show'];
-					if (type && id && validTypes.includes(type)) {
-						return { type, id };
-					}
-				}
+				// Only auto-embed if the link is the sole content of its paragraph
+				const parent = anchor.parentElement;
+				if (!parent || parent.tagName !== 'P') continue;
+				if (parent.childNodes.length !== 1) continue;
+
+				const height = this.settings.embedHeight || '352';
+				const embedSrc = `https://open.spotify.com/embed/${info.type}/${info.id}`;
+
+				const iframe = document.createElement('iframe');
+				iframe.src = embedSrc;
+				iframe.width = '100%';
+				iframe.height = height;
+				iframe.style.borderRadius = '12px';
+				iframe.style.border = 'none';
+				iframe.setAttribute('allowfullscreen', '');
+				iframe.setAttribute('allow', 'autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture');
+				iframe.setAttribute('loading', 'lazy');
+
+				parent.replaceWith(iframe);
 			}
-			return null;
-		} catch {
-			return null;
-		}
+		});
 	}
 
 	async loadSettings() {
@@ -116,18 +131,6 @@ class SpotifyEmbedSettingTab extends PluginSettingTab {
 	display(): void {
 		const { containerEl } = this;
 		containerEl.empty();
-
-		new Setting(containerEl)
-			.setName('Embed style')
-			.setDesc('Choose how spotify links are automatically formatted when pasted on an empty line.')
-			.addDropdown(dropdown => dropdown
-				.addOption('iframe', 'Iframe')
-				.addOption('div', 'Div (resilient wrapper)')
-				.setValue(this.plugin.settings.embedStyle)
-				.onChange(async (value: string) => {
-					this.plugin.settings.embedStyle = value as 'iframe' | 'div';
-					await this.plugin.saveSettings();
-				}));
 
 		new Setting(containerEl)
 			.setName('Embed height')
