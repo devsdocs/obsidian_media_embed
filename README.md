@@ -1,4 +1,4 @@
-# Obsidian Stream Embed
+# Stream Embed
 
 Automatically convert pasted Spotify and YouTube links into playable embedded players inside [Obsidian](https://obsidian.md).
 
