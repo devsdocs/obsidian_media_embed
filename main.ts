@@ -71,9 +71,14 @@ export default class SpotifyEmbedPlugin extends Plugin {
 			const pathParts = parsed.pathname.split('/').filter(p => p.length > 0);
 			if (pathParts.length >= 2) {
 				let typeIndex = 0;
-				// Some Spotify links have locale like /intl-en/track/...
-				if (pathParts[0]?.startsWith('intl-')) {
-					typeIndex = 1;
+				// Skip known prefixes: /embed/... and /intl-en/...
+				while (typeIndex < pathParts.length - 1) {
+					const part = pathParts[typeIndex];
+					if (part === 'embed' || part?.startsWith('intl-')) {
+						typeIndex++;
+					} else {
+						break;
+					}
 				}
 				
 				if (pathParts.length > typeIndex + 1) {
