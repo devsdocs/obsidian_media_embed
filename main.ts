@@ -200,6 +200,8 @@ export default class MediaEmbedPlugin extends Plugin {
 	}
 }
 
+// ponytail: getSettingDefinitions() not in obsidian types yet; adopt when types ship, then bump minAppVersion to 1.13.0
+// eslint-disable-next-line obsidianmd/settings-tab/prefer-setting-definitions
 class MediaEmbedSettingTab extends PluginSettingTab {
 	plugin: MediaEmbedPlugin;
 
