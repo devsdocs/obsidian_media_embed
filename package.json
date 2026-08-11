@@ -1,7 +1,7 @@
 {
-	"name": "obsidian-spotify-embed",
+	"name": "obsidian-media-embed",
 	"version": "1.0.0",
-	"description": "Automatically convert pasted Spotify links into embedded iframe players.",
+	"description": "Automatically convert pasted Spotify and YouTube links into embedded players.",
 	"main": "main.js",
 	"type": "module",
 	"scripts": {
