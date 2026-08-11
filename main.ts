@@ -92,7 +92,7 @@ export default class SpotifyEmbedPlugin extends Plugin {
 	}
 
 	async loadSettings() {
-		this.settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData());
+		this.settings = Object.assign({}, DEFAULT_SETTINGS, (await this.loadData()) as Partial<SpotifyEmbedSettings>);
 	}
 
 	async saveSettings() {
@@ -114,7 +114,7 @@ class SpotifyEmbedSettingTab extends PluginSettingTab {
 
 		new Setting(containerEl)
 			.setName('Embed style')
-			.setDesc('Choose how Spotify links are automatically formatted when pasted on an empty line.')
+			.setDesc('Choose how spotify links are automatically formatted when pasted on an empty line.')
 			.addDropdown(dropdown => dropdown
 				.addOption('iframe', 'Iframe')
 				.addOption('div', 'Div (resilient wrapper)')
