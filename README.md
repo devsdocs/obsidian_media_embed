@@ -1,4 +1,4 @@
-# Obsidian Media Embed
+# Obsidian Stream Embed
 
 Automatically convert pasted Spotify and YouTube links into playable embedded players inside [Obsidian](https://obsidian.md).
 
@@ -54,7 +54,7 @@ https://www.youtube.com/watch?v=dQw4w9WgXcQ
 
 ## Settings
 
-Configurable in **Settings → Media Embed**:
+Configurable in **Settings → Stream Embed**:
 
 | Setting | Description | Default |
 |---|---|---|
@@ -67,15 +67,15 @@ Common Spotify height values: `352` (normal player), `152` (compact player).
 ### From community plugins
 
 1. Open **Settings → Community plugins**.
-2. Select **Browse** and search for **Media Embed**.
+2. Select **Browse** and search for **Stream Embed**.
 3. Select **Install**, then **Enable**.
 
 ### Manual
 
 1. Download `main.js`, `manifest.json`, and `styles.css` from the [latest release](https://github.com/devsdocs/obsidian_media_embed/releases).
-2. Create a folder named `media-embed` inside your vault's `.obsidian/plugins/` directory.
+2. Create a folder named `stream-embed` inside your vault's `.obsidian/plugins/` directory.
 3. Place the downloaded files inside the new folder.
-4. Open **Settings → Community plugins** and enable **Media Embed**.
+4. Open **Settings → Community plugins** and enable **Stream Embed**.
 
 ## Development
 
