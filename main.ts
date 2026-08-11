@@ -79,19 +79,20 @@ export default class SpotifyEmbedPlugin extends Plugin {
 
 		// Post-processor: render Spotify URLs as iframes in Reading / Live Preview
 		this.registerMarkdownPostProcessor((el: HTMLElement, _ctx: MarkdownPostProcessorContext) => {
-			// Find <a> elements linking to Spotify
-			const anchors = el.querySelectorAll('a[href*="open.spotify.com"]');
-			for (const anchor of Array.from(anchors)) {
-				const href = anchor.getAttribute('href');
-				if (!href) continue;
+			const paragraphs = el.querySelectorAll('p');
+			for (const p of Array.from(paragraphs)) {
+				const text = p.textContent?.trim() ?? '';
+				if (!text) continue;
 
-				const info = extractSpotifyInfo(href);
+				const info = extractSpotifyInfo(text);
 				if (!info) continue;
 
-				// Only auto-embed if the link is the sole content of its paragraph
-				const parent = anchor.parentElement;
-				if (!parent || parent.tagName !== 'P') continue;
-				if (parent.childNodes.length !== 1) continue;
+				// Only embed if the paragraph contains just a Spotify URL
+				// (it may be wrapped in an <a> tag or be plain text)
+				const nonEmptyChildren = Array.from(p.childNodes).filter(n =>
+					n.nodeType !== Node.TEXT_NODE || (n.textContent?.trim() ?? '') !== ''
+				);
+				if (nonEmptyChildren.length > 1) continue;
 
 				const height = this.settings.embedHeight || '352';
 				const embedSrc = `https://open.spotify.com/embed/${info.type}/${info.id}`;
@@ -106,7 +107,7 @@ export default class SpotifyEmbedPlugin extends Plugin {
 				iframe.setAttribute('allow', 'autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture');
 				iframe.setAttribute('loading', 'lazy');
 
-				parent.replaceWith(iframe);
+				p.replaceWith(iframe);
 			}
 		});
 	}
