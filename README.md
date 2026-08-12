@@ -2,6 +2,10 @@
 
 Automatically convert pasted links into playable embedded players and interactive previews inside [Obsidian](https://obsidian.md).
 
+## Compatibility
+
+Requires Obsidian 1.13.0 or newer.
+
 ## Features
 
 - **Seamless Paste** — Paste a link from Spotify, YouTube, Google Drive, Vimeo, Loom, Figma, SoundCloud, Twitch, or CodePen on an empty line to instantly create an embed block.

@@ -1,4 +1,5 @@
-import { App, PluginSettingTab, Setting, Notice } from 'obsidian';
+import { App, Notice, PluginSettingTab } from 'obsidian';
+import type { SettingDefinitionItem } from 'obsidian';
 import type MediaEmbedPlugin from './main';
 import { DEFAULT_SETTINGS } from './types';
 
@@ -10,96 +11,114 @@ export class MediaEmbedSettingTab extends PluginSettingTab {
 		this.plugin = plugin;
 	}
 
-	display(): void {
-		const { containerEl } = this;
-		containerEl.empty();
-
-		if (!this.plugin.settings) {
-			this.plugin.settings = Object.assign({}, DEFAULT_SETTINGS);
-		}
-
-		const settings = this.plugin.settings;
-
-		new Setting(containerEl)
-			.setName('Default embed mode')
-			.setDesc('Choose whether media embeds load automatically or display a click-to-load preview card by default.')
-			.addDropdown(dropdown => dropdown
-				.addOption('auto', 'Auto / direct embed')
-				.addOption('click', 'Click-to-load preview card')
-				.setValue(settings.defaultEmbedMode ?? DEFAULT_SETTINGS.defaultEmbedMode)
-				.onChange(async (value) => {
-					this.plugin.settings.defaultEmbedMode = value as 'auto' | 'click';
-					this.plugin.settings.clickToLoad = value === 'click';
-					await this.plugin.saveSettings();
-				}));
-
-		new Setting(containerEl)
-			.setName('Enable click-to-load mode')
-			.setDesc('Display a preview card and only load player iframes when clicked.')
-			.addToggle(toggle => toggle
-				.setValue(settings.clickToLoad ?? DEFAULT_SETTINGS.clickToLoad)
-				.onChange(async (value) => {
-					this.plugin.settings.clickToLoad = value;
-					this.plugin.settings.defaultEmbedMode = value ? 'click' : 'auto';
-					await this.plugin.saveSettings();
-				}));
-
-		new Setting(containerEl)
-			.setName('Show hover action bar')
-			.setDesc('Display open in browser, copy link, and fullscreen buttons on hover.')
-			.addToggle(toggle => toggle
-				.setValue(settings.showActionBar ?? DEFAULT_SETTINGS.showActionBar)
-				.onChange(async (value) => {
-					this.plugin.settings.showActionBar = value;
-					await this.plugin.saveSettings();
-				}));
-
-		new Setting(containerEl)
-			.setName('Spotify embed height')
-			.setDesc('Height of spotify embeds in pixels (e.g., 352 for normal player, 152 for compact player).')
-			.addText(text => text
-				.setPlaceholder('352')
-				.setValue(settings.embedHeight ?? DEFAULT_SETTINGS.embedHeight)
-				.onChange(async (value) => {
-					this.plugin.settings.embedHeight = value.trim() || DEFAULT_SETTINGS.embedHeight;
-					await this.plugin.saveSettings();
-				}));
-
-		new Setting(containerEl)
-			.setName('Google Drive embed height')
-			.setDesc('Height of Google Drive embeds in pixels (e.g., 480 for standard view, 600 for large document view).')
-			.addText(text => text
-				.setPlaceholder('480')
-				.setValue(settings.gdriveEmbedHeight ?? DEFAULT_SETTINGS.gdriveEmbedHeight)
-				.onChange(async (value) => {
-					this.plugin.settings.gdriveEmbedHeight = value.trim() || DEFAULT_SETTINGS.gdriveEmbedHeight;
-					await this.plugin.saveSettings();
-				}));
-
-		new Setting(containerEl)
-			.setName('Default embed height')
-			.setDesc('Default height for other media embeds (e.g., figma, codepen) in pixels.')
-			.addText(text => text
-				.setPlaceholder('480')
-				.setValue(settings.defaultEmbedHeight ?? DEFAULT_SETTINGS.defaultEmbedHeight)
-				.onChange(async (value) => {
-					this.plugin.settings.defaultEmbedHeight = value.trim() || DEFAULT_SETTINGS.defaultEmbedHeight;
-					await this.plugin.saveSettings();
-				}));
-
-		new Setting(containerEl)
-			.setName('Reset settings')
-			.setDesc('Restore all setting values back to their default state.')
-			.addButton(button => button
-				.setButtonText('Reset to defaults')
-				.setWarning()
-				.onClick(async () => {
-					this.plugin.settings = Object.assign({}, DEFAULT_SETTINGS);
-					await this.plugin.saveSettings();
-					new Notice('Media embed settings reset to default.');
-					this.display();
-				}));
+	getSettingDefinitions(): SettingDefinitionItem[] {
+		return [
+			{
+				name: 'Default embed mode',
+				desc: 'Choose whether media embeds load automatically or display a click-to-load preview card by default.',
+				control: {
+					type: 'dropdown',
+					key: 'defaultEmbedMode',
+					defaultValue: DEFAULT_SETTINGS.defaultEmbedMode,
+					options: {
+						auto: 'Auto / direct embed',
+						click: 'Click-to-load preview card',
+					},
+				},
+			},
+			{
+				name: 'Enable click-to-load mode',
+				desc: 'Display a preview card and only load player iframes when clicked.',
+				control: {
+					type: 'toggle',
+					key: 'clickToLoad',
+					defaultValue: DEFAULT_SETTINGS.clickToLoad,
+				},
+			},
+			{
+				name: 'Show hover action bar',
+				desc: 'Display open in browser, copy link, and fullscreen buttons on hover.',
+				control: {
+					type: 'toggle',
+					key: 'showActionBar',
+					defaultValue: DEFAULT_SETTINGS.showActionBar,
+				},
+			},
+			{
+				name: 'Spotify embed height',
+				desc: 'Height of Spotify embeds in pixels (e.g., 352 for normal player, 152 for compact player).',
+				control: {
+					type: 'text',
+					key: 'embedHeight',
+					defaultValue: DEFAULT_SETTINGS.embedHeight,
+					placeholder: DEFAULT_SETTINGS.embedHeight,
+				},
+			},
+			{
+				name: 'Google Drive embed height',
+				desc: 'Height of Google Drive embeds in pixels (e.g., 480 for standard view, 600 for large document view).',
+				control: {
+					type: 'text',
+					key: 'gdriveEmbedHeight',
+					defaultValue: DEFAULT_SETTINGS.gdriveEmbedHeight,
+					placeholder: DEFAULT_SETTINGS.gdriveEmbedHeight,
+				},
+			},
+			{
+				name: 'Default embed height',
+				desc: 'Default height for other media embeds (e.g., Figma, CodePen) in pixels.',
+				control: {
+					type: 'text',
+					key: 'defaultEmbedHeight',
+					defaultValue: DEFAULT_SETTINGS.defaultEmbedHeight,
+					placeholder: DEFAULT_SETTINGS.defaultEmbedHeight,
+				},
+			},
+			{
+				name: 'Reset settings',
+				desc: 'Restore all setting values back to their default state.',
+				action: (el: HTMLElement) => {
+					const button = el.createEl('button', { text: 'Reset to defaults' });
+					button.addClass('mod-warning');
+					button.onclick = async () => {
+						this.plugin.settings = Object.assign({}, DEFAULT_SETTINGS);
+						await this.plugin.saveSettings();
+						new Notice('Media embed settings reset to default.');
+						this.update();
+					};
+				},
+			},
+		];
 	}
 
-}
+	async setControlValue(key: string, value: unknown): Promise<void> {
+		if (key === 'defaultEmbedMode') {
+			if (value !== 'auto' && value !== 'click') return;
+			this.plugin.settings.defaultEmbedMode = value;
+			this.plugin.settings.clickToLoad = value === 'click';
+		} else if (key === 'clickToLoad') {
+			if (typeof value !== 'boolean') return;
+			this.plugin.settings.clickToLoad = value;
+			this.plugin.settings.defaultEmbedMode = value ? 'click' : 'auto';
+		} else if (key === 'showActionBar') {
+			if (typeof value !== 'boolean') return;
+			this.plugin.settings.showActionBar = value;
+		} else if (key === 'embedHeight') {
+			if (typeof value !== 'string') return;
+			this.plugin.settings.embedHeight = value.trim() || DEFAULT_SETTINGS.embedHeight;
+		} else if (key === 'gdriveEmbedHeight') {
+			if (typeof value !== 'string') return;
+			this.plugin.settings.gdriveEmbedHeight = value.trim() || DEFAULT_SETTINGS.gdriveEmbedHeight;
+		} else if (key === 'defaultEmbedHeight') {
+			if (typeof value !== 'string') return;
+			this.plugin.settings.defaultEmbedHeight = value.trim() || DEFAULT_SETTINGS.defaultEmbedHeight;
+		} else {
+			return;
+		}
 
+		await this.plugin.saveSettings();
+		if (key === 'defaultEmbedMode' || key === 'clickToLoad') {
+			this.update();
+		}
+	}
+}
