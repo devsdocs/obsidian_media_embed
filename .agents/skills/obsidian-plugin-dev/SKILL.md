@@ -40,7 +40,7 @@ esbuild.config.mjs  # Esbuild bundling configuration
 
 ### Manifest (`manifest.json`)
 - **`id`**: Unique, stable plugin ID matching folder name in vault (never change after initial release). Must not contain `obsidian`.
-- **`version`**: Strict SemVer `x.y.z` (e.g. `1.1.4`).
+- **`version`**: Strict SemVer `x.y.z` (e.g. `1.1.5`).
 - **`minAppVersion`**: Minimum Obsidian app build version required.
 - **`description`**:
   - Max 250 characters. Must end with a period `.`.
@@ -57,7 +57,7 @@ esbuild.config.mjs  # Esbuild bundling configuration
   {
     "1.0.0": "1.0.0",
     "1.1.0": "1.0.0",
-    "1.1.4": "1.0.0"
+    "1.1.5": "1.0.0"
   }
   ```
 
@@ -72,9 +72,7 @@ esbuild.config.mjs  # Esbuild bundling configuration
   - Use `editorCallback` for Markdown editor commands; use `callback` for unconditional commands.
 
 ### Settings Tab Rules (`PluginSettingTab`)
-- **Declarative vs. Imperative API**:
-  - On Obsidian 1.13.0+, if `getSettingDefinitions()` is declared on `PluginSettingTab`, Obsidian **bypasses `display()` completely**.
-  - Do NOT define an incomplete `getSettingDefinitions()` when using the imperative `display()` method with `new Setting(containerEl)` controls; doing so causes setting tabs to render completely empty!
+- **Dual Support Pattern (Path B)**: When `minAppVersion` is `< 1.13.0` (e.g., `"1.0.0"`), implement both `getSettingDefinitions()` (providing `id`, `name`, `description` items so Obsidian 1.13+ settings search indexes the settings to satisfy `obsidianmd/settings-tab/prefer-setting-definitions`) AND imperative `display()` (for UI control rendering across all app versions).
 - **No Top-Level Headings**: Do NOT add a top-level `setHeading()` (such as "General" or plugin name) if the settings tab contains only one section.
 - **Avoid "Settings" in Headings**: Use "Advanced" instead of "Advanced settings".
 - **Native Setting Layout**: Rely on Obsidian's `Setting` class methods (`addToggle`, `addText`, `addDropdown`, `addButton`).
@@ -130,9 +128,9 @@ When preparing and publishing a release:
    - Run `npm run lint` (`eslint .`) with `eslint-plugin-obsidianmd` and verify 0 errors and 0 warnings.
    - Run unit test suite.
 4. **Git Tagging & Push**:
-   - Tag name MUST match `manifest.json` `version` exactly **without a leading `v`** (e.g., tag `1.1.4`).
+   - Tag name MUST match `manifest.json` `version` exactly **without a leading `v`** (e.g., tag `1.1.5`).
    - Push commit to `main` branch: `git push origin main`.
-   - Push tag: `git push origin 1.1.4`.
+   - Push tag: `git push origin 1.1.5`.
 5. **Release Assets Attachment**:
    - Attach individual binary assets directly to the GitHub release tag:
      - `main.js` (Must be ignored by `.gitignore` in git repo, attached only as release asset)
@@ -140,5 +138,5 @@ When preparing and publishing a release:
      - `styles.css`
    - Release creation command:
      ```bash
-     gh release create 1.1.4 --title "1.1.4" --notes "Release 1.1.4" manifest.json main.js styles.css
+     gh release create 1.1.5 --title "1.1.5" --notes "Release 1.1.5" manifest.json main.js styles.css
      ```
