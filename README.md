@@ -1,56 +1,69 @@
 # Stream Embed
 
-Automatically convert pasted Spotify and YouTube links into playable embedded players inside [Obsidian](https://obsidian.md).
+Automatically convert pasted links into playable embedded players and interactive previews inside [Obsidian](https://obsidian.md).
 
 ## Features
 
-- **Seamless paste** — Paste a Spotify or YouTube link on an empty line and it instantly becomes a playable embed.
-- **Spotify** — Tracks, albums, playlists, artists, episodes, and shows.
-- **YouTube** — Regular videos, shorts, live streams, embeds, and timestamped links.
-- **Customizable** — Configure the Spotify embed height in settings. YouTube uses a responsive 16:9 aspect ratio.
+- **Seamless Paste** — Paste a link from Spotify, YouTube, Google Drive, Vimeo, Loom, Figma, SoundCloud, Twitch, or CodePen on an empty line to instantly create an embed block.
+- **Hover Action Bar** — Hover over any embed to quickly copy the URL (📋), open it in your browser (↗), or maximize it into a full-window modal (⤢).
+- **Click-to-Load Mode** — Optional performance and privacy mode that renders a lightweight preview card and loads the iframe only when clicked.
+- **Inline Options Override** — Customize height, aspect ratio, or click mode per block directly inside markdown.
+- **Command Palette Integration** — Quickly convert links under cursor or selections into embed blocks via commands.
+- **Multi-Platform Portfolio**:
+  - **Spotify**: Tracks, albums, playlists, artists, episodes, shows.
+  - **YouTube**: Videos, shorts, live streams, embeds, timestamps.
+  - **Google Drive & Workspace**: PDFs, videos, audio, images, Docs, Sheets, Slides, Forms, Drawings, Folders.
+  - **Vimeo & Loom**: High-definition video walkthroughs and screen recordings.
+  - **Figma & FigJam**: Live UI designs, prototypes, and whiteboards.
+  - **SoundCloud**: Audio tracks and podcasts.
+  - **Twitch**: Live streams, video vods, and clips.
+  - **CodePen**: Live code snippets and web playgrounds.
+
+---
 
 ## Usage
 
-1. Copy a link from Spotify or YouTube.
+### Auto Paste
+1. Copy a link from any supported platform.
 2. Paste it on a **blank line** in your Obsidian editor.
-3. The plugin wraps it in an `embed` code block and renders it as a player in **Live Preview** and **Reading View**.
+3. The plugin automatically converts it into an `embed` block and renders it in **Live Preview** and **Reading View**.
 
-### Manual embed
+### Manual & Custom Block Options
+You can customize height, aspect ratio, or load mode per block:
 
-You can also create an embed code block manually:
-
-````
+````markdown
 ```embed
-https://open.spotify.com/track/4cOdK2wGLETKBW3PvgPWqT
+https://drive.google.com/file/d/1ABC123xyz_456-789/view
+height: 700px
+```
+
+```embed
+https://vimeo.com/123456789
+aspect: 16/9
+mode: click
 ```
 ````
 
-````
+Shorthand single-line format:
+````markdown
 ```embed
-https://www.youtube.com/watch?v=dQw4w9WgXcQ
+https://drive.google.com/file/d/1ABC123xyz_456-789/view height=700
 ```
 ````
 
-### Supported URL formats
+---
 
-**Spotify**
+## Commands
 
-- `https://open.spotify.com/track/...`
-- `https://open.spotify.com/album/...`
-- `https://open.spotify.com/playlist/...`
-- `https://open.spotify.com/artist/...`
-- `https://open.spotify.com/episode/...`
-- `https://open.spotify.com/show/...`
-- URLs with `/embed/` or `/intl-*/` prefixes are also supported.
+Access via **Ctrl/Cmd + P** (Command Palette):
 
-**YouTube**
+| Command | Description |
+|---|---|
+| `Stream Embed: Convert link under Cursor to embed block` | Wraps link under editor cursor into an embed block |
+| `Stream Embed: Convert selection to embed block` | Converts selected link text to an embed block |
+| `Stream Embed: Toggle click-to-load mode` | Toggles globally between direct iframe loading and click-to-load cards |
 
-- `https://www.youtube.com/watch?v=...`
-- `https://youtu.be/...`
-- `https://www.youtube.com/shorts/...`
-- `https://www.youtube.com/live/...`
-- `https://www.youtube.com/embed/...`
-- Timestamps (`?t=120`, `?t=2m30s`) are preserved.
+---
 
 ## Settings
 
@@ -58,9 +71,12 @@ Configurable in **Settings → Stream Embed**:
 
 | Setting | Description | Default |
 |---|---|---|
-| Embed height | Height of Spotify embeds in pixels. YouTube uses a 16:9 aspect ratio instead. | `352` |
+| **Spotify embed height** | Default height of Spotify embeds in pixels. | `352` |
+| **Google Drive embed height** | Default height of Google Drive/Docs embeds in pixels. | `480` |
+| **Enable click-to-load mode** | Displays preview cards and loads iframes only on click. | `Disabled` |
+| **Show hover action bar** | Shows action toolbar (Copy, Open, Fullscreen) on hover. | `Enabled` |
 
-Common Spotify height values: `352` (normal player), `152` (compact player).
+---
 
 ## Installation
 
@@ -76,6 +92,8 @@ Common Spotify height values: `352` (normal player), `152` (compact player).
 2. Create a folder named `stream-embed` inside your vault's `.obsidian/plugins/` directory.
 3. Place the downloaded files inside the new folder.
 4. Open **Settings → Community plugins** and enable **Stream Embed**.
+
+---
 
 ## Development
 

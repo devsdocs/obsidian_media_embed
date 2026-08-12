@@ -2,18 +2,18 @@
 	"compilerOptions": {
 		"inlineSourceMap": true,
 		"inlineSources": true,
-		"module": "Node16",
+		"module": "ESNext",
 		"target": "ES2021",
 		"strict": true,
 		"noImplicitReturns": true,
 		"noFallthroughCasesInSwitch": true,
 		"noUncheckedIndexedAccess": true,
-		"moduleResolution": "node16",
+		"moduleResolution": "bundler",
 		"isolatedModules": true,
 		"skipLibCheck": true,
 		"forceConsistentCasingInFileNames": true,
 		"allowSyntheticDefaultImports": true,
 		"lib": ["ES2021", "DOM"]
 	},
-	"include": ["main.ts"]
+	"include": ["src/**/*.ts"]
 }
