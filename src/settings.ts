@@ -64,6 +64,7 @@ export class MediaEmbedSettingTab extends PluginSettingTab {
 	display(): void {
 		const { containerEl } = this;
 		containerEl.empty();
+		containerEl.addClass('media-embed-settings-tab');
 
 		if (!this.plugin.settings) {
 			this.plugin.settings = Object.assign({}, DEFAULT_SETTINGS);
