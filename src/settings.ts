@@ -65,12 +65,16 @@ export class MediaEmbedSettingTab extends PluginSettingTab {
 		const { containerEl } = this;
 		containerEl.empty();
 
+		if (!this.plugin.settings) {
+			this.plugin.settings = Object.assign({}, DEFAULT_SETTINGS);
+		}
+
 		new Setting(containerEl)
 			.setName('Media embeds')
 			.setDesc('Configure embed heights, interaction modes, and action bar controls for embedded media.')
 			.setHeading();
 
-		const settings = this.plugin.settings || DEFAULT_SETTINGS;
+		const settings = this.plugin.settings;
 
 		new Setting(containerEl)
 			.setName('Default embed mode')
@@ -83,6 +87,7 @@ export class MediaEmbedSettingTab extends PluginSettingTab {
 					this.plugin.settings.defaultEmbedMode = value as 'auto' | 'click';
 					this.plugin.settings.clickToLoad = value === 'click';
 					await this.plugin.saveSettings();
+					this.display();
 				}));
 
 		new Setting(containerEl)
@@ -92,12 +97,9 @@ export class MediaEmbedSettingTab extends PluginSettingTab {
 				.setValue(settings.clickToLoad ?? DEFAULT_SETTINGS.clickToLoad)
 				.onChange(async (value) => {
 					this.plugin.settings.clickToLoad = value;
-					if (value) {
-						this.plugin.settings.defaultEmbedMode = 'click';
-					} else {
-						this.plugin.settings.defaultEmbedMode = 'auto';
-					}
+					this.plugin.settings.defaultEmbedMode = value ? 'click' : 'auto';
 					await this.plugin.saveSettings();
+					this.display();
 				}));
 
 		new Setting(containerEl)
@@ -156,5 +158,6 @@ export class MediaEmbedSettingTab extends PluginSettingTab {
 					this.display();
 				}));
 	}
+
 }
 
