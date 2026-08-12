@@ -34,7 +34,7 @@ export class EmbedFullscreenModal extends BaseModal {
 		contentEl.addClass('media-embed-modal-content');
 
 		const headerEl = contentEl.createDiv({ cls: 'media-embed-modal-header' });
-		headerEl.createSpan({ cls: 'media-embed-modal-title', text: `${this.platformName} Embed` });
+		headerEl.createSpan({ cls: 'media-embed-modal-title', text: `${this.platformName} embed` });
 
 		const actionsEl = headerEl.createDiv({ cls: 'media-embed-modal-actions' });
 

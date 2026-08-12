@@ -69,11 +69,6 @@ export class MediaEmbedSettingTab extends PluginSettingTab {
 			this.plugin.settings = Object.assign({}, DEFAULT_SETTINGS);
 		}
 
-		new Setting(containerEl)
-			.setName('Media embeds')
-			.setDesc('Configure embed heights, interaction modes, and action bar controls for embedded media.')
-			.setHeading();
-
 		const settings = this.plugin.settings;
 
 		new Setting(containerEl)
