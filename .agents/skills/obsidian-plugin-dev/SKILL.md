@@ -140,3 +140,7 @@ When preparing and publishing a release:
      ```bash
      gh release create 1.1.5 --title "1.1.5" --notes "Release 1.1.5" manifest.json main.js styles.css
      ```
+6. **Public Release Description (Required)**:
+   - Every release made public MUST include meaningful release notes; never publish a blank description.
+   - Describe user-visible changes, compatibility requirements, and validation status.
+   - Use `--notes` when creating the release, or set the description before publishing a workflow-created draft with `gh release edit <version> --draft=false --notes "<release description>"`.
