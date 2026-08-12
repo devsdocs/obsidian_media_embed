@@ -1,13 +1,13 @@
 ---
 name: obsidian-plugin-dev
 description: >-
-  Comprehensive guide, architectural patterns, UI/UX rules, CSS guidelines, security, and release workflow for Obsidian Community Plugin development.
+  Comprehensive guide, architectural patterns, UI/UX rules, CSS guidelines, security, developer policies, and release workflow for Obsidian Community Plugin development.
   Use when creating, editing, styling, debugging, refactoring, building settings tabs, or publishing Obsidian plugins.
 ---
 
 # Obsidian Community Plugin Development Guide
 
-This skill provides an end-to-end reference for building, styling, testing, and releasing Obsidian Community Plugins in TypeScript.
+This skill provides an end-to-end reference for building, styling, testing, and releasing Obsidian Community Plugins in TypeScript, adhering strictly to the official [Obsidian Developer Documentation](https://docs.obsidian.md).
 
 ---
 
@@ -36,35 +36,46 @@ esbuild.config.mjs  # Esbuild bundling configuration
 
 ---
 
-## 2. Manifest & Versioning Rules
+## 2. Manifest & Versioning Requirements
 
-- **`manifest.json`**:
-  - `id`: Stable plugin ID matching folder name in vault (never change after initial release).
-  - `version`: Strict SemVer `x.y.z` (e.g. `1.1.3`).
-  - `minAppVersion`: Minimum Obsidian version required.
-  - `isDesktopOnly`: `false` unless desktop-specific Node/Electron APIs are required.
-- **`versions.json`**:
-  - Maps every plugin release version to its required `minAppVersion`:
-    ```json
-    {
-      "1.0.0": "1.0.0",
-      "1.1.0": "1.0.0",
-      "1.1.3": "1.0.0"
-    }
-    ```
+### Manifest (`manifest.json`)
+- **`id`**: Unique, stable plugin ID matching folder name in vault (never change after initial release). Must not contain `obsidian`.
+- **`version`**: Strict SemVer `x.y.z` (e.g. `1.1.3`).
+- **`minAppVersion`**: Minimum Obsidian app build version required.
+- **`description`**:
+  - Max 250 characters. Must end with a period `.`.
+  - Start with an action verb (e.g. *"Convert pasted Spotify links into embedded players."*).
+  - Do NOT start with "This is a plugin".
+  - No emojis or special characters.
+  - Proper noun capitalization ("Obsidian", "Markdown", "Spotify", "YouTube").
+- **`isDesktopOnly`**: `false` unless Node.js (`fs`, `os`, `child_process`) or Electron APIs are required.
+- **`fundingUrl`**: Include only if accepting donations via GitHub Sponsors / Buy Me A Coffee; omit otherwise.
+
+### Version Mapping (`versions.json`)
+- Maps every plugin release version to its required `minAppVersion`:
+  ```json
+  {
+    "1.0.0": "1.0.0",
+    "1.1.0": "1.0.0",
+    "1.1.3": "1.0.0"
+  }
+  ```
 
 ---
 
 ## 3. UI, Copy & Settings Guidelines
 
 ### UI Text & Copy Rules
-- **Sentence case**: All UI text (buttons, labels, setting names, descriptions, commands) MUST use [Sentence case](https://help.obsidian.md/Contributing+to+Obsidian/Style+guide), except for proper nouns (e.g., "Google Drive", "YouTube", "Spotify").
-- **Commands**: Callback commands should use `editorCallback` when Markdown editor is needed, or `callback` for unconditional actions.
+- **Sentence case**: All UI text (buttons, labels, setting names, descriptions, commands) MUST use [Sentence case](https://help.obsidian.md/Contributing+to+Obsidian/Style+guide), except for proper nouns.
+- **Commands**:
+  - Do NOT prefix command IDs with plugin ID (Obsidian automatically prefixes command IDs).
+  - Use `editorCallback` for Markdown editor commands; use `callback` for unconditional commands.
 
 ### Settings Tab Rules (`PluginSettingTab`)
 - **No Top-Level Headings**: Do NOT add a top-level `setHeading()` (such as "General" or plugin name) if the settings tab contains only one section.
+- **Avoid "Settings" in Headings**: Use "Advanced" instead of "Advanced settings".
 - **Native Setting Layout**: Rely on Obsidian's `Setting` class methods (`addToggle`, `addText`, `addDropdown`, `addButton`).
-- **Reactive Synchronization**: When updating related setting values in `onChange`, ensure `await this.plugin.saveSettings()` is called and re-render `this.display()` if state depends on component values.
+- **Reactive Synchronization**: When updating setting values in `onChange`, ensure `await this.plugin.saveSettings()` is called and re-render `this.display()` if state depends on component values.
 
 ---
 
@@ -84,9 +95,18 @@ esbuild.config.mjs  # Esbuild bundling configuration
 
 ---
 
-## 5. Security & Resource Management
+## 5. Security, Privacy & Developer Policies
 
+- **No Remote Code Execution**: Do NOT fetch and evaluate remote scripts or auto-update plugin code outside of official GitHub releases.
+- **No Telemetry / Dynamic Ads**: No client-side telemetry or dynamic ads.
 - **DOM Construction Safety**: NEVER use `innerHTML`, `outerHTML`, or `insertAdjacentHTML` with dynamic strings. Always use `createEl()`, `createDiv()`, `createSpan()`, or `el.empty()`.
+- **Web API Preference**: Use Web APIs (`SubtleCrypto`, `navigator.clipboard`, `requestUrl`) over Node.js equivalents for mobile compatibility.
+- **Vault Operations**: Prefer `app.vault.getFileByPath()` over iterating all files; use `Editor` API for active note edits; use `Vault.process()` for background modifications.
+
+---
+
+## 6. Resource Management & Cleanup
+
 - **Resource Lifecycle**: Register all event listeners, intervals, DOM events, and markdown code block processors via plugin helpers so they are automatically cleaned up on unload:
   - `this.registerEvent(...)`
   - `this.registerDomEvent(...)`
@@ -95,17 +115,17 @@ esbuild.config.mjs  # Esbuild bundling configuration
 
 ---
 
-## 6. GitHub Release & Asset Publishing Checklist
+## 7. Release & GitHub Publishing Workflow
 
-When releasing a new version:
+When preparing and publishing a release:
 
-1. **Version Update**:
+1. **Version Alignment**:
    - Update `version` in `manifest.json`, `package.json`, and map in `versions.json`.
 2. **Build Production Bundle**:
    - Run `npm run build` (`tsc -noEmit -skipLibCheck && node esbuild.config.mjs production`).
 3. **Lint & Test**:
-   - Run `npm run lint` (`eslint .`) and verify 0 errors and 0 warnings.
-   - Run unit test suite (`jiti test/...`).
+   - Run `npm run lint` (`eslint .`) with `eslint-plugin-obsidianmd` and verify 0 errors and 0 warnings.
+   - Run unit test suite.
 4. **Git Tagging & Push**:
    - Tag name MUST match `manifest.json` `version` exactly **without a leading `v`** (e.g., tag `1.1.3`).
    - Push commit to `main` branch: `git push origin main`.
@@ -115,7 +135,7 @@ When releasing a new version:
      - `main.js` (Must be ignored by `.gitignore` in git repo, attached only as release asset)
      - `manifest.json`
      - `styles.css`
-   - Command:
+   - Release creation command:
      ```bash
      gh release create 1.1.3 --title "1.1.3" --notes "Release 1.1.3" manifest.json main.js styles.css
      ```
