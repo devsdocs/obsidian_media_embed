@@ -10,41 +10,6 @@ export class MediaEmbedSettingTab extends PluginSettingTab {
 		this.plugin = plugin;
 	}
 
-	getSettingDefinitions() {
-		return [
-			{
-				id: 'defaultEmbedMode',
-				name: 'Default embed mode',
-				description: 'Choose whether media embeds load automatically or display a click-to-load preview card by default.',
-			},
-			{
-				id: 'clickToLoad',
-				name: 'Enable click-to-load mode',
-				description: 'Display a preview card and only load player iframes when clicked.',
-			},
-			{
-				id: 'showActionBar',
-				name: 'Show hover action bar',
-				description: 'Display open in browser, copy link, and fullscreen buttons on hover.',
-			},
-			{
-				id: 'embedHeight',
-				name: 'Spotify embed height',
-				description: 'Height of Spotify embeds in pixels (e.g., 352 for normal player, 152 for compact player).',
-			},
-			{
-				id: 'gdriveEmbedHeight',
-				name: 'Google Drive embed height',
-				description: 'Height of Google Drive embeds in pixels (e.g., 480 for standard view, 600 for large document view).',
-			},
-			{
-				id: 'defaultEmbedHeight',
-				name: 'Default embed height',
-				description: 'Default height for other media embeds (e.g., Figma, CodePen) in pixels.',
-			},
-		];
-	}
-
 	display(): void {
 		const { containerEl } = this;
 		containerEl.empty();
