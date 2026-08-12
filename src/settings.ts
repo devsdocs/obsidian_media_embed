@@ -1,64 +1,13 @@
-import { App, PluginSettingTab, Setting, Plugin, Notice } from 'obsidian';
-import type { MediaEmbedPluginInterface } from './types';
+import { App, PluginSettingTab, Setting, Notice } from 'obsidian';
+import type MediaEmbedPlugin from './main';
 import { DEFAULT_SETTINGS } from './types';
 
 export class MediaEmbedSettingTab extends PluginSettingTab {
-	plugin: Plugin & MediaEmbedPluginInterface;
+	plugin: MediaEmbedPlugin;
 
-	constructor(app: App, plugin: Plugin & MediaEmbedPluginInterface) {
+	constructor(app: App, plugin: MediaEmbedPlugin) {
 		super(app, plugin);
 		this.plugin = plugin;
-	}
-
-	getSettingDefinitions() {
-		return [
-			{
-				key: 'defaultEmbedMode',
-				name: 'Default embed mode',
-				description: 'Choose whether media embeds load automatically or display a click-to-load preview card by default.',
-				type: 'dropdown' as const,
-				options: {
-					auto: 'Auto / direct embed',
-					click: 'Click-to-load preview card',
-				},
-				default: 'auto',
-			},
-			{
-				key: 'clickToLoad',
-				name: 'Enable click-to-load mode',
-				description: 'Display a preview card and only load player iframes when clicked.',
-				type: 'boolean' as const,
-				default: false,
-			},
-			{
-				key: 'showActionBar',
-				name: 'Show hover action bar',
-				description: 'Display open in browser, copy link, and fullscreen buttons on hover.',
-				type: 'boolean' as const,
-				default: true,
-			},
-			{
-				key: 'embedHeight',
-				name: 'Spotify embed height',
-				description: 'Height of spotify embeds in pixels (e.g., 352 for normal player, 152 for compact player).',
-				type: 'text' as const,
-				default: '352',
-			},
-			{
-				key: 'gdriveEmbedHeight',
-				name: 'Google Drive embed height',
-				description: 'Height of Google Drive embeds in pixels (e.g., 480 for standard view, 600 for large document view).',
-				type: 'text' as const,
-				default: '480',
-			},
-			{
-				key: 'defaultEmbedHeight',
-				name: 'Default embed height',
-				description: 'Default height for other media embeds (e.g., figma, codepen) in pixels.',
-				type: 'text' as const,
-				default: '480',
-			},
-		];
 	}
 
 	display(): void {
@@ -82,7 +31,6 @@ export class MediaEmbedSettingTab extends PluginSettingTab {
 					this.plugin.settings.defaultEmbedMode = value as 'auto' | 'click';
 					this.plugin.settings.clickToLoad = value === 'click';
 					await this.plugin.saveSettings();
-					this.display();
 				}));
 
 		new Setting(containerEl)
@@ -94,7 +42,6 @@ export class MediaEmbedSettingTab extends PluginSettingTab {
 					this.plugin.settings.clickToLoad = value;
 					this.plugin.settings.defaultEmbedMode = value ? 'click' : 'auto';
 					await this.plugin.saveSettings();
-					this.display();
 				}));
 
 		new Setting(containerEl)
