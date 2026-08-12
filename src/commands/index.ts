@@ -5,7 +5,7 @@ import { detectMedia } from '../embeds';
 export function registerCommands(plugin: MediaEmbedPlugin): void {
 	plugin.addCommand({
 		id: 'convert-link-under-cursor',
-		name: 'Convert link under cursor to embed block',
+		name: 'Convert link under Cursor to embed block',
 		editorCallback: (editor: Editor) => {
 			const cursor = editor.getCursor();
 			const lineText = editor.getLine(cursor.line).trim();
