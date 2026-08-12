@@ -27,6 +27,7 @@ export interface MediaEmbedSettings {
 	defaultEmbedHeight: string;
 	clickToLoad: boolean;
 	showActionBar: boolean;
+	defaultEmbedMode: 'auto' | 'click';
 }
 
 export const DEFAULT_SETTINGS: MediaEmbedSettings = {
@@ -35,6 +36,7 @@ export const DEFAULT_SETTINGS: MediaEmbedSettings = {
 	defaultEmbedHeight: '480',
 	clickToLoad: false,
 	showActionBar: true,
+	defaultEmbedMode: 'auto',
 };
 
 export interface MediaEmbedPluginInterface {
