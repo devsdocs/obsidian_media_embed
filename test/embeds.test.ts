@@ -1,6 +1,6 @@
 import assert from 'node:assert';
 import { extractSpotifyInfo } from '../src/embeds/spotify';
-import { extractYoutubeId, extractYoutubeInfo, extractYoutubeStartTime } from '../src/embeds/youtube';
+import { extractYoutubeId, extractYoutubeInfo, extractYoutubeStartTime, isYoutubeVideoAndPlaylist } from '../src/embeds/youtube';
 import { extractGDriveEmbedUrl } from '../src/embeds/gdrive';
 import { extractVimeoId } from '../src/embeds/vimeo';
 import { extractLoomId } from '../src/embeds/loom';
@@ -47,6 +47,18 @@ assert.deepStrictEqual(
 assert.deepStrictEqual(
 	extractYoutubeInfo('https://www.youtube.com/watch?v=dQw4w9WgXcQ&list=PLrAXtmErZgOdP_8GztsuKi9nrraNbKKp4&index=3'),
 	{ videoId: 'dQw4w9WgXcQ', playlistId: 'PLrAXtmErZgOdP_8GztsuKi9nrraNbKKp4', index: 3 }
+);
+assert.strictEqual(
+	isYoutubeVideoAndPlaylist(extractYoutubeInfo('https://www.youtube.com/watch?v=r6WKmIJPC9E&list=PLWSprlbiwBMM')),
+	true
+);
+assert.strictEqual(
+	isYoutubeVideoAndPlaylist(extractYoutubeInfo('https://www.youtube.com/watch?v=r6WKmIJPC9E')),
+	false
+);
+assert.strictEqual(
+	isYoutubeVideoAndPlaylist(extractYoutubeInfo('https://www.youtube.com/playlist?list=PLWSprlbiwBMM')),
+	false
 );
 assert.deepStrictEqual(
 	detectMedia('https://www.youtube.com/playlist?list=PLrAXtmErZgOdP_8GztsuKi9nrraNbKKp4'),

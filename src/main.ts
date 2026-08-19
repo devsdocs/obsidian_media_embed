@@ -2,7 +2,9 @@ import { Plugin, Editor } from 'obsidian';
 import { MediaEmbedSettings, DEFAULT_SETTINGS } from './types';
 import { MediaEmbedSettingTab } from './settings';
 import { detectMedia, renderMediaEmbed } from './embeds';
+import { extractYoutubeInfo, isYoutubeVideoAndPlaylist } from './embeds/youtube';
 import { registerCommands } from './commands';
+import { YouTubeChoiceModal } from './ui/modal';
 
 export default class MediaEmbedPlugin extends Plugin {
 	settings!: MediaEmbedSettings;
@@ -27,9 +29,28 @@ export default class MediaEmbedPlugin extends Plugin {
 
 				evt.preventDefault();
 
-				const codeBlock = `\`\`\`embed\n${media.url}\n\`\`\``;
-				editor.replaceRange(codeBlock, { line, ch: 0 }, { line, ch: lineText.length });
-				editor.setCursor({ line: line + 2, ch: 3 });
+				const insertCodeBlock = (urlToInsert: string) => {
+					const codeBlock = `\`\`\`embed\n${urlToInsert}\n\`\`\``;
+					editor.replaceRange(codeBlock, { line, ch: 0 }, { line, ch: lineText.length });
+					editor.setCursor({ line: line + 2, ch: 3 });
+				};
+
+				if (media.platform === 'youtube') {
+					const ytInfo = extractYoutubeInfo(media.url);
+					if (isYoutubeVideoAndPlaylist(ytInfo)) {
+						new YouTubeChoiceModal(
+							this.app,
+							ytInfo.videoId,
+							ytInfo.playlistId,
+							ytInfo.startTime,
+							ytInfo.index,
+							(chosenUrl) => insertCodeBlock(chosenUrl)
+						).open();
+						return;
+					}
+				}
+
+				insertCodeBlock(media.url);
 			})
 		);
 

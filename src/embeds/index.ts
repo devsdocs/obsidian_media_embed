@@ -51,7 +51,23 @@ export function renderMediaEmbed(
 	const media = detectMedia(url);
 
 	if (!media) {
-		container.createEl('p', { text: `Unsupported media URL: ${url}` });
+		const errorCard = container.createDiv({ cls: 'media-embed-error-card' });
+		errorCard.createDiv({ cls: 'media-embed-error-title', text: 'Unable to embed media' });
+		errorCard.createDiv({
+			cls: 'media-embed-error-desc',
+			text: 'The URL could not be recognized as a supported media link. If this video or playlist is private, deleted, or restricted from embedding by its author, it cannot be displayed inside Obsidian.',
+		});
+		if (url) {
+			const openLink = errorCard.createEl('a', {
+				cls: 'media-embed-error-url',
+				text: `Open URL: ${url}`,
+				attr: { href: url, target: '_blank', rel: 'noopener noreferrer' },
+			});
+			openLink.addEventListener('click', (e) => {
+				e.preventDefault();
+				window.open(url, '_blank');
+			});
+		}
 		return;
 	}
 
@@ -160,7 +176,10 @@ function renderActionBar(
 
 	const openBtn = actions.createEl('button', {
 		cls: 'media-embed-action-btn',
-		attr: { 'aria-label': 'Open in browser', title: 'Open in browser' },
+		attr: {
+			'aria-label': 'Open in browser (use if media is private or restricted)',
+			title: 'Open in browser (use if media is private or restricted)',
+		},
 		text: '↗',
 	});
 	openBtn.addEventListener('click', (e) => {
@@ -198,5 +217,10 @@ function renderClickToLoadCard(
 	loadBtn.addEventListener('click', (e) => {
 		e.stopPropagation();
 		onLoad();
+	});
+
+	card.createDiv({
+		cls: 'media-embed-card-hint',
+		text: 'Note: If the content is private, deleted, or embedding is restricted by its author, playback may not be available in embedded view.',
 	});
 }

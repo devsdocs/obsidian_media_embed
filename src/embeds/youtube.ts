@@ -74,6 +74,12 @@ export function extractYoutubeId(url: string): string | null {
 	return info?.videoId ?? info?.playlistId ?? null;
 }
 
+export function isYoutubeVideoAndPlaylist(
+	info: YoutubeInfo | null
+): info is YoutubeInfo & { videoId: string; playlistId: string } {
+	return Boolean(info?.videoId && info?.playlistId);
+}
+
 function normalizeYoutubeId(value: string): string | null {
 	const id = value.trim();
 	return /^[a-zA-Z0-9_-]{11}$/.test(id) ? id : null;

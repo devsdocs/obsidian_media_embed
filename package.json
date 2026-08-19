@@ -1,6 +1,6 @@
 {
 	"name": "obsidian-media-embed",
-	"version": "1.1.8",
+	"version": "1.1.9",
 	"description": "Automatically convert pasted Spotify and YouTube links into embedded players.",
 	"main": "main.js",
 	"type": "module",

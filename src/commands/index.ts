@@ -1,6 +1,8 @@
 import { Editor, Notice } from 'obsidian';
 import type MediaEmbedPlugin from '../main';
 import { detectMedia } from '../embeds';
+import { extractYoutubeInfo, isYoutubeVideoAndPlaylist } from '../embeds/youtube';
+import { YouTubeChoiceModal } from '../ui/modal';
 
 export function registerCommands(plugin: MediaEmbedPlugin): void {
 	plugin.addCommand({
@@ -12,13 +14,32 @@ export function registerCommands(plugin: MediaEmbedPlugin): void {
 
 			const media = detectMedia(lineText);
 			if (!media) {
-				new Notice('No valid embeddable URL found on current line.');
+				new Notice('No supported embeddable URL found on current line. If the link is private or deleted, it cannot be embedded.');
 				return;
 			}
 
-			const codeBlock = `\`\`\`embed\n${media.url}\n\`\`\``;
-			editor.replaceRange(codeBlock, { line: cursor.line, ch: 0 }, { line: cursor.line, ch: editor.getLine(cursor.line).length });
-			new Notice(`Converted link to ${media.platform} embed block.`);
+			const applyBlock = (urlToInsert: string) => {
+				const codeBlock = `\`\`\`embed\n${urlToInsert}\n\`\`\``;
+				editor.replaceRange(codeBlock, { line: cursor.line, ch: 0 }, { line: cursor.line, ch: editor.getLine(cursor.line).length });
+				new Notice(`Converted link to ${media.platform} embed block.`);
+			};
+
+			if (media.platform === 'youtube') {
+				const ytInfo = extractYoutubeInfo(media.url);
+				if (isYoutubeVideoAndPlaylist(ytInfo)) {
+					new YouTubeChoiceModal(
+						plugin.app,
+						ytInfo.videoId,
+						ytInfo.playlistId,
+						ytInfo.startTime,
+						ytInfo.index,
+						(chosenUrl) => applyBlock(chosenUrl)
+					).open();
+					return;
+				}
+			}
+
+			applyBlock(media.url);
 		},
 	});
 
@@ -34,13 +55,32 @@ export function registerCommands(plugin: MediaEmbedPlugin): void {
 
 			const media = detectMedia(selection);
 			if (!media) {
-				new Notice('Selected text is not a supported embeddable URL.');
+				new Notice('Selected text is not a supported embeddable URL. If the link is private or deleted, it cannot be embedded.');
 				return;
 			}
 
-			const codeBlock = `\`\`\`embed\n${media.url}\n\`\`\``;
-			editor.replaceSelection(codeBlock);
-			new Notice(`Converted selection to ${media.platform} embed block.`);
+			const applyBlock = (urlToInsert: string) => {
+				const codeBlock = `\`\`\`embed\n${urlToInsert}\n\`\`\``;
+				editor.replaceSelection(codeBlock);
+				new Notice(`Converted selection to ${media.platform} embed block.`);
+			};
+
+			if (media.platform === 'youtube') {
+				const ytInfo = extractYoutubeInfo(media.url);
+				if (isYoutubeVideoAndPlaylist(ytInfo)) {
+					new YouTubeChoiceModal(
+						plugin.app,
+						ytInfo.videoId,
+						ytInfo.playlistId,
+						ytInfo.startTime,
+						ytInfo.index,
+						(chosenUrl) => applyBlock(chosenUrl)
+					).open();
+					return;
+				}
+			}
+
+			applyBlock(media.url);
 		},
 	});
 
