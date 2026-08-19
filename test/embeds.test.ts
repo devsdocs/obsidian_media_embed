@@ -1,6 +1,6 @@
 import assert from 'node:assert';
 import { extractSpotifyInfo } from '../src/embeds/spotify';
-import { extractYoutubeId, extractYoutubeStartTime } from '../src/embeds/youtube';
+import { extractYoutubeId, extractYoutubeInfo, extractYoutubeStartTime } from '../src/embeds/youtube';
 import { extractGDriveEmbedUrl } from '../src/embeds/gdrive';
 import { extractVimeoId } from '../src/embeds/vimeo';
 import { extractLoomId } from '../src/embeds/loom';
@@ -35,6 +35,22 @@ assert.strictEqual(
 assert.strictEqual(
 	extractYoutubeStartTime('https://youtu.be/dQw4w9WgXcQ?t=2m30s'),
 	150
+);
+assert.strictEqual(
+	extractYoutubeStartTime('https://youtu.be/dQw4w9WgXcQ?t=90s'),
+	90
+);
+assert.deepStrictEqual(
+	extractYoutubeInfo('https://www.youtube.com/playlist?list=PLrAXtmErZgOdP_8GztsuKi9nrraNbKKp4'),
+	{ playlistId: 'PLrAXtmErZgOdP_8GztsuKi9nrraNbKKp4' }
+);
+assert.deepStrictEqual(
+	extractYoutubeInfo('https://www.youtube.com/watch?v=dQw4w9WgXcQ&list=PLrAXtmErZgOdP_8GztsuKi9nrraNbKKp4&index=3'),
+	{ videoId: 'dQw4w9WgXcQ', playlistId: 'PLrAXtmErZgOdP_8GztsuKi9nrraNbKKp4', index: 3 }
+);
+assert.deepStrictEqual(
+	detectMedia('https://www.youtube.com/playlist?list=PLrAXtmErZgOdP_8GztsuKi9nrraNbKKp4'),
+	{ platform: 'youtube', url: 'https://www.youtube.com/playlist?list=PLrAXtmErZgOdP_8GztsuKi9nrraNbKKp4' }
 );
 
 // 3. Google Drive / Docs tests

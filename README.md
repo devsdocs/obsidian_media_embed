@@ -15,7 +15,7 @@ Requires Obsidian 1.13.0 or newer.
 - **Command Palette Integration** — Quickly convert links under cursor or selections into embed blocks via commands.
 - **Multi-Platform Portfolio**:
   - **Spotify**: Tracks, albums, playlists, artists, episodes, shows.
-  - **YouTube**: Videos, shorts, live streams, embeds, timestamps.
+  - **YouTube**: Videos, playlists, shorts, live streams, embeds, timestamps.
   - **Google Drive & Workspace**: PDFs, videos, audio, images, Docs, Sheets, Slides, Forms, Drawings, Folders.
   - **Vimeo & Loom**: High-definition video walkthroughs and screen recordings.
   - **Figma & FigJam**: Live UI designs, prototypes, and whiteboards.

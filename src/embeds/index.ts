@@ -2,7 +2,7 @@ import { App } from 'obsidian';
 import type { MediaInfo, MediaEmbedSettings, PlatformType } from '../types';
 import { parseEmbedBlock } from './parser';
 import { extractSpotifyInfo, createSpotifyIframe } from './spotify';
-import { extractYoutubeId, createYoutubeIframe } from './youtube';
+import { extractYoutubeInfo, createYoutubeIframe } from './youtube';
 import { extractGDriveEmbedUrl, createGDriveIframe } from './gdrive';
 import { extractVimeoId, createVimeoIframe } from './vimeo';
 import { extractLoomId, createLoomIframe } from './loom';
@@ -17,7 +17,7 @@ export function detectMedia(text: string): MediaInfo | null {
 	if (trimmed === '' || /\s/.test(trimmed)) return null;
 
 	if (extractSpotifyInfo(trimmed)) return { platform: 'spotify', url: trimmed };
-	if (extractYoutubeId(trimmed)) return { platform: 'youtube', url: trimmed };
+	if (extractYoutubeInfo(trimmed)) return { platform: 'youtube', url: trimmed };
 	if (extractGDriveEmbedUrl(trimmed)) return { platform: 'gdrive', url: trimmed };
 	if (extractVimeoId(trimmed)) return { platform: 'vimeo', url: trimmed };
 	if (extractLoomId(trimmed)) return { platform: 'loom', url: trimmed };
