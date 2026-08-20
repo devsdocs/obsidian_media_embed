@@ -10,11 +10,25 @@ import { extractFigmaUrl, createFigmaIframe } from './figma';
 import { extractSoundcloudUrl, createSoundcloudIframe } from './soundcloud';
 import { extractTwitchInfo, createTwitchIframe } from './twitch';
 import { extractCodepenInfo, createCodepenIframe } from './codepen';
+import {
+	extractLocalMediaInfo,
+	createPdfEmbed,
+	createVideoEmbed,
+	createAudioEmbed,
+	openLocalMedia,
+} from './local';
 import { EmbedFullscreenModal } from '../ui/modal';
 
 export function detectMedia(text: string): MediaInfo | null {
 	const trimmed = text.trim();
-	if (trimmed === '' || /\s/.test(trimmed)) return null;
+	if (trimmed === '') return null;
+
+	const localInfo = extractLocalMediaInfo(trimmed);
+	if (localInfo) {
+		return { platform: localInfo.platform, url: trimmed };
+	}
+
+	if (/\s/.test(trimmed)) return null;
 
 	if (extractSpotifyInfo(trimmed)) return { platform: 'spotify', url: trimmed };
 	if (extractYoutubeInfo(trimmed)) return { platform: 'youtube', url: trimmed };
@@ -39,6 +53,9 @@ const PLATFORM_LABELS: Record<PlatformType, string> = {
 	soundcloud: 'SoundCloud',
 	twitch: 'Twitch',
 	codepen: 'CodePen',
+	pdf: 'PDF',
+	video: 'Video',
+	audio: 'Audio',
 };
 
 export function renderMediaEmbed(
@@ -55,17 +72,17 @@ export function renderMediaEmbed(
 		errorCard.createDiv({ cls: 'media-embed-error-title', text: 'Unable to embed media' });
 		errorCard.createDiv({
 			cls: 'media-embed-error-desc',
-			text: 'The URL could not be recognized as a supported media link. If this video or playlist is private, deleted, or restricted from embedding by its author, it cannot be displayed inside Obsidian.',
+			text: 'The URL or path could not be recognized as a supported media link. If this file or media is private, deleted, or restricted from embedding, it cannot be displayed inside Obsidian.',
 		});
 		if (url) {
 			const openLink = errorCard.createEl('a', {
 				cls: 'media-embed-error-url',
-				text: `Open URL: ${url}`,
+				text: `Open target: ${url}`,
 				attr: { href: url, target: '_blank', rel: 'noopener noreferrer' },
 			});
 			openLink.addEventListener('click', (e) => {
 				e.preventDefault();
-				window.open(url, '_blank');
+				openLocalMedia(app, url);
 			});
 		}
 		return;
@@ -76,49 +93,58 @@ export function renderMediaEmbed(
 
 	const isClickMode = options.mode === 'click' || (settings.clickToLoad && options.mode !== 'auto');
 
-	const buildIframe = (targetEl: HTMLElement): HTMLIFrameElement | null => {
+	const buildEmbed = (targetEl: HTMLElement): HTMLElement | null => {
 		const effectiveHeight = options.height || getPlatformHeight(media.platform, settings);
-		let iframe: HTMLIFrameElement | null = null;
+		let embedEl: HTMLElement | null = null;
 
 		switch (media.platform) {
 			case 'spotify':
-				iframe = createSpotifyIframe(targetEl, url, effectiveHeight);
+				embedEl = createSpotifyIframe(targetEl, url, effectiveHeight);
 				break;
 			case 'youtube':
-				iframe = createYoutubeIframe(targetEl, url);
+				embedEl = createYoutubeIframe(targetEl, url);
 				break;
 			case 'gdrive':
-				iframe = createGDriveIframe(targetEl, url, effectiveHeight);
+				embedEl = createGDriveIframe(targetEl, url, effectiveHeight);
 				break;
 			case 'vimeo':
-				iframe = createVimeoIframe(targetEl, url);
+				embedEl = createVimeoIframe(targetEl, url);
 				break;
 			case 'loom':
-				iframe = createLoomIframe(targetEl, url);
+				embedEl = createLoomIframe(targetEl, url);
 				break;
 			case 'figma':
-				iframe = createFigmaIframe(targetEl, url, effectiveHeight);
+				embedEl = createFigmaIframe(targetEl, url, effectiveHeight);
 				break;
 			case 'soundcloud':
-				iframe = createSoundcloudIframe(targetEl, url);
+				embedEl = createSoundcloudIframe(targetEl, url);
 				break;
 			case 'twitch':
-				iframe = createTwitchIframe(targetEl, url);
+				embedEl = createTwitchIframe(targetEl, url);
 				break;
 			case 'codepen':
-				iframe = createCodepenIframe(targetEl, url, effectiveHeight);
+				embedEl = createCodepenIframe(targetEl, url, effectiveHeight);
+				break;
+			case 'pdf':
+				embedEl = createPdfEmbed(app, targetEl, url, effectiveHeight);
+				break;
+			case 'video':
+				embedEl = createVideoEmbed(app, targetEl, url, options);
+				break;
+			case 'audio':
+				embedEl = createAudioEmbed(app, targetEl, url);
 				break;
 		}
 
-		if (iframe && options.height) {
-			iframe.setAttribute('height', options.height);
+		if (embedEl && options.height && embedEl.tagName.toLowerCase() === 'iframe') {
+			embedEl.setAttribute('height', options.height);
 		}
 
-		return iframe;
+		return embedEl;
 	};
 
 	if (settings.showActionBar) {
-		renderActionBar(app, wrapper, platformName, url, buildIframe);
+		renderActionBar(app, wrapper, platformName, url, buildEmbed);
 	}
 
 	const contentEl = wrapper.createDiv({ cls: 'media-embed-content' });
@@ -126,10 +152,10 @@ export function renderMediaEmbed(
 	if (isClickMode) {
 		renderClickToLoadCard(contentEl, platformName, url, () => {
 			contentEl.empty();
-			buildIframe(contentEl);
+			buildEmbed(contentEl);
 		});
 	} else {
-		buildIframe(contentEl);
+		buildEmbed(contentEl);
 	}
 }
 
@@ -137,6 +163,8 @@ function getPlatformHeight(platform: PlatformType, settings: MediaEmbedSettings)
 	switch (platform) {
 		case 'spotify':
 			return settings.embedHeight || '352';
+		case 'pdf':
+			return settings.pdfEmbedHeight || '600';
 		case 'gdrive':
 		case 'figma':
 		case 'codepen':
@@ -151,7 +179,7 @@ function renderActionBar(
 	wrapper: HTMLElement,
 	platformName: string,
 	url: string,
-	buildIframe: (targetEl: HTMLElement) => HTMLIFrameElement | null
+	buildEmbed: (targetEl: HTMLElement) => HTMLElement | null
 ): void {
 	const bar = wrapper.createDiv({ cls: 'media-embed-action-bar' });
 
@@ -174,17 +202,20 @@ function renderActionBar(
 		}, 1500);
 	});
 
+	const isLocal = extractLocalMediaInfo(url);
+	const openLabel = isLocal ? 'Open file in Obsidian or default app' : 'Open in browser (use if media is private or restricted)';
+
 	const openBtn = actions.createEl('button', {
 		cls: 'media-embed-action-btn',
 		attr: {
-			'aria-label': 'Open in browser (use if media is private or restricted)',
-			title: 'Open in browser (use if media is private or restricted)',
+			'aria-label': openLabel,
+			title: openLabel,
 		},
 		text: '↗',
 	});
 	openBtn.addEventListener('click', (e) => {
 		e.stopPropagation();
-		window.open(url, '_blank');
+		openLocalMedia(app, url);
 	});
 
 	const modalBtn = actions.createEl('button', {
@@ -194,7 +225,7 @@ function renderActionBar(
 	});
 	modalBtn.addEventListener('click', (e) => {
 		e.stopPropagation();
-		new EmbedFullscreenModal(app, platformName, url, buildIframe).open();
+		new EmbedFullscreenModal(app, platformName, url, buildEmbed).open();
 	});
 }
 
@@ -221,6 +252,6 @@ function renderClickToLoadCard(
 
 	card.createDiv({
 		cls: 'media-embed-card-hint',
-		text: 'Note: If the content is private, deleted, or embedding is restricted by its author, playback may not be available in embedded view.',
+		text: 'Note: If the content is private, deleted, or embedding is restricted, playback may not be available in embedded view.',
 	});
 }

@@ -2,9 +2,9 @@
 	"id": "stream-embed",
 	"name": "Stream Embed",
 	"minAppVersion": "1.13.0",
-	"description": "Convert pasted Spotify, YouTube, Vimeo, Loom, Figma, SoundCloud, Twitch, CodePen, and Google Drive links into embedded players and preview cards.",
+	"description": "Convert pasted Spotify, YouTube, Vimeo, Loom, Figma, SoundCloud, Twitch, CodePen, Google Drive links, and local PDF, video, and audio files into embeds.",
 	"author": "devsdocs",
 	"authorUrl": "https://github.com/devsdocs",
 	"isDesktopOnly": false,
-	"version": "1.2.0"
+	"version": "1.3.0"
 }

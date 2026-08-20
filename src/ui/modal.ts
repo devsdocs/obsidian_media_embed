@@ -1,4 +1,5 @@
 import { App, Modal, Setting } from 'obsidian';
+import { extractLocalMediaInfo, openLocalMedia } from '../embeds/local';
 
 const BaseModal = typeof Modal !== 'undefined' ? Modal : class {
 	app: App;
@@ -13,18 +14,18 @@ const BaseModal = typeof Modal !== 'undefined' ? Modal : class {
 export class EmbedFullscreenModal extends BaseModal {
 	private readonly embedUrl: string;
 	private readonly platformName: string;
-	private readonly iframeCreator: (container: HTMLElement) => HTMLIFrameElement | null;
+	private readonly embedCreator: (container: HTMLElement) => HTMLElement | null;
 
 	constructor(
 		app: App,
 		platformName: string,
 		embedUrl: string,
-		iframeCreator: (container: HTMLElement) => HTMLIFrameElement | null
+		embedCreator: (container: HTMLElement) => HTMLElement | null
 	) {
 		super(app);
 		this.platformName = platformName;
 		this.embedUrl = embedUrl;
-		this.iframeCreator = iframeCreator;
+		this.embedCreator = embedCreator;
 	}
 
 	onOpen(): void {
@@ -50,23 +51,25 @@ export class EmbedFullscreenModal extends BaseModal {
 			}, 1500);
 		});
 
+		const isLocal = extractLocalMediaInfo(this.embedUrl);
 		const openBtn = actionsEl.createEl('button', {
 			cls: 'media-embed-btn',
-			text: 'Open in browser ↗',
+			text: isLocal ? 'Open file ↗' : 'Open in browser ↗',
 		});
 		openBtn.addEventListener('click', () => {
-			window.open(this.embedUrl, '_blank');
+			openLocalMedia(this.app, this.embedUrl);
 		});
 
 		const iframeContainer = contentEl.createDiv({ cls: 'media-embed-modal-iframe-container' });
-		const iframe = this.iframeCreator(iframeContainer);
-		if (iframe) {
-			iframe.addClass('media-embed-fullscreen-iframe');
+		const mediaEl = this.embedCreator(iframeContainer);
+		if (mediaEl) {
+			mediaEl.addClass('media-embed-fullscreen-iframe');
+			mediaEl.addClass('media-embed-fullscreen-media');
 		}
 
 		const noteEl = contentEl.createDiv({ cls: 'media-embed-modal-note' });
 		noteEl.createEl('small', {
-			text: 'Note: If the media is private, deleted, or embedding is restricted by its author, click "open in browser" to view it directly.',
+			text: 'Note: If the media is private, deleted, or embedding is restricted by its author, click open to view it directly.',
 		});
 	}
 

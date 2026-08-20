@@ -65,6 +65,16 @@ export class MediaEmbedSettingTab extends PluginSettingTab {
 				},
 			},
 			{
+				name: 'PDF embed height',
+				desc: 'Height of PDF embeds in pixels (e.g., 600 for standard document view).',
+				control: {
+					type: 'text',
+					key: 'pdfEmbedHeight',
+					defaultValue: DEFAULT_SETTINGS.pdfEmbedHeight,
+					placeholder: DEFAULT_SETTINGS.pdfEmbedHeight,
+				},
+			},
+			{
 				name: 'Default embed height',
 				desc: 'Default height for other media embeds (e.g., Figma, CodePen) in pixels.',
 				control: {
@@ -109,6 +119,9 @@ export class MediaEmbedSettingTab extends PluginSettingTab {
 		} else if (key === 'gdriveEmbedHeight') {
 			if (typeof value !== 'string') return;
 			this.plugin.settings.gdriveEmbedHeight = value.trim() || DEFAULT_SETTINGS.gdriveEmbedHeight;
+		} else if (key === 'pdfEmbedHeight') {
+			if (typeof value !== 'string') return;
+			this.plugin.settings.pdfEmbedHeight = value.trim() || DEFAULT_SETTINGS.pdfEmbedHeight;
 		} else if (key === 'defaultEmbedHeight') {
 			if (typeof value !== 'string') return;
 			this.plugin.settings.defaultEmbedHeight = value.trim() || DEFAULT_SETTINGS.defaultEmbedHeight;

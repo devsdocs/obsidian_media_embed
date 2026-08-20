@@ -7,7 +7,10 @@ export type PlatformType =
 	| 'figma'
 	| 'soundcloud'
 	| 'twitch'
-	| 'codepen';
+	| 'codepen'
+	| 'pdf'
+	| 'video'
+	| 'audio';
 
 export interface EmbedOptions {
 	height?: string;
@@ -25,6 +28,7 @@ export interface MediaEmbedSettings {
 	embedHeight: string;
 	gdriveEmbedHeight: string;
 	defaultEmbedHeight: string;
+	pdfEmbedHeight: string;
 	clickToLoad: boolean;
 	showActionBar: boolean;
 	defaultEmbedMode: 'auto' | 'click';
@@ -34,6 +38,7 @@ export const DEFAULT_SETTINGS: MediaEmbedSettings = {
 	embedHeight: '352',
 	gdriveEmbedHeight: '480',
 	defaultEmbedHeight: '480',
+	pdfEmbedHeight: '600',
 	clickToLoad: false,
 	showActionBar: true,
 	defaultEmbedMode: 'auto',
